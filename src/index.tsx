@@ -21,10 +21,12 @@ function Square(props: SquareProps) {
 
 function Board(props: Record<string, string>) {
   const [squares, setSquares] = useState(Array(9).fill(null));
+  const [xIsNext, setXIsNext] = useState(true);
   const handleClick = (i: number) => {
     const newSquares = squares.slice();
-    newSquares[i] = 'X';
+    newSquares[i] = xIsNext ? 'X' : 'O';
     setSquares(newSquares);
+    setXIsNext(!xIsNext);
   };
   const renderSquare = (i: number) => (
     <Square
@@ -32,7 +34,7 @@ function Board(props: Record<string, string>) {
       onClick={() => handleClick(i)}
     />
   );
-  const status = 'Next player: X';
+  const status = `Next player: ${xIsNext ? 'X' : 'O'}`;
   return (
     <div>
       <div className="status">{status}</div>
