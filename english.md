@@ -550,3 +550,36 @@ which helps to determine when a component requires re-rendering.
 You can learn more about `shouldComponentUpdate()`
 and how you can build *pure components*
 by reading [Optimizing Performance](https://reactjs.org/docs/optimizing-performance.html#examples).
+
+### Function Components
+
+We'll now change the Square to be a **function component**.
+
+In React, **function components** are a simpler way to write components
+that only contain a `render` metho and don't have their own state.
+Instead of defining a class which extends `React.Component`,
+we can write a function that takes `props` as input
+ad returns what should be rendered.
+Function components are less tedious to write than classes,
+and many components can be eexpressed this way.
+
+Replace the Square class with this function:
+
+```jsx
+function Square(props) {
+  return (
+    <button className="square" onClick={props.onClick}>
+      {props.value}
+    </button>
+  );
+}
+```
+
+We have chaged `this.props` to `props` both times it appears.
+
+> **Note**
+> 
+> When we modified the Square to be a function component,
+> we also changed `onClick={() => this.props.onClick()}`
+> to a shorter `onClick={props.onClick}`
+> (note the lack of parentheses on both sides).
