@@ -20,38 +20,16 @@ function Square(props: SquareProps) {
   );
 }
 
-function Board(props: Record<string, string>) {
-  const [squares, setSquares] = useState(Array(9).fill(null));
-  const [xIsNext, setXIsNext] = useState(true);
-  const [status, setStauts] = useState('');
-
-  const handleClick = (i: number) => {
-    const newSquares = squares.slice();
-    if (calculateWinner(newSquares) || newSquares[i]) return;
-    newSquares[i] = xIsNext ? 'X' : 'O';
-    setSquares(newSquares);
-    setXIsNext(!xIsNext);
-  };
-
+function Board(props: Record<string, any>) {
   const renderSquare = (i: number) => (
     <Square
-      value={squares[i]}
-      onClick={() => handleClick(i)}
+      value={props.squares[i]}
+      onClick={() => props.onClick(i)}
     />
   );
 
-  useEffect(() => {
-    const winner = calculateWinner(squares);
-    setStauts(
-      winner
-        ? `Winner: ${winner}`
-        : `Next player: ${xIsNext ? 'X' : 'O'}`
-    );
-  }, [squares, xIsNext]);
-
   return (
     <div>
-      <div className="status">{status}</div>
       <div className="board-row">
         {renderSquare(0)}
         {renderSquare(1)}
@@ -71,20 +49,45 @@ function Board(props: Record<string, string>) {
   );
 }
 
-class Game extends React.Component {
-  render() {
-    return (
-      <div className="game">
-        <div className="game-board">
-          <Board />
-        </div>
-        <div className="game-info">
-          <div>{/* status */}</div>
-          <ol>{/* TODO */}</ol>
-        </div>
+type SquareType = { squares: Array<any> };
+type HistoryType = Array<SquareType>;
+
+function Game() {
+  const [history, setHistory] = useState<HistoryType>([{ squares: Array(9).fill(null) }]);
+  const [xIsNext, setXIsNext] = useState(true);
+  const [current, setCurrent] = useState<SquareType>({ squares: [] });
+  const [status, setStatus] = useState('');
+
+  const handleClick = (i: number) => {
+    const squares = current.squares.slice();
+    if (calculateWinner(squares) || squares[i]) return;
+    squares[i] = xIsNext ? 'X' : 'O';
+    setHistory(history.concat([{ squares }]));
+    setXIsNext(!xIsNext);
+  };
+
+  useEffect(() => {
+    setCurrent(history[history.length - 1]);
+    const winner = calculateWinner(current.squares);
+    setStatus(winner
+      ? `Winner: ${winner}`
+      : `Next player: ${xIsNext ? 'X' : 'O'}`);
+  }, [current.squares, history, xIsNext]);
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board
+          squares={current.squares}
+          onClick={(i: number) => handleClick(i)}
+        />
       </div>
-    );
-  }
+      <div className="game-info">
+        <div>{status}</div>
+        <ol>{/* TODO */}</ol>
+      </div>
+    </div>
+  );
 }
 
 function calculateWinner(squares: any[]) {
