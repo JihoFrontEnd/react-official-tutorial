@@ -1086,3 +1086,159 @@ but has the same problems as array indices and is not recommended in most cases.
 
 Keys do not need to be globally unique;
 they only need to be unique between components and their siblings.
+
+### Implementing Time Travel
+
+In the tic-tac-toe game's history,
+each past move has a unique ID associated with it:
+it's the sequential number of the move.
+The moves are never re-oerdered, deleted, or inserted in the middle,
+so it's safe to use the move index as a key.
+
+In the Game component's `render` method,
+we can add the key as `<li key={move}>`
+and React's warning about keys should disappear:
+
+```jsx
+const moves = history.map((step, move) => {
+  const desc = move
+    ? 'Go to move #' + move
+    : 'Go to game start';
+  return (
+    <li key={move}>
+      <button onClick={() => this.jumpTo(move)}>{desc}</button>
+    </li>
+  );
+});
+```
+
+Clicking any of the list item's buttons throws an error
+because the `jumpTo` method is undefined.
+Before we implement `jumpTo`,
+we'll add `stepNumber` to the Game component's state
+to indicate which step we're currently viewing.
+
+First, add `stepNumber: 0` to the initial state in Game's `constructor`:
+
+```js
+class Game extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      history: [{
+        squares: Array(9).fill(null),
+      }],
+      stepNumber: 0,
+      xIsNext: true,
+    };
+  }
+}
+```
+
+Next, we'll define the `jumpTo` method in Game to update that `stepNumber`.
+We also set `xIsNext` to true if the number
+that we're changing `stepNumber` to is even:
+
+```js
+jumpTo(step) {
+  this.setState({
+    stepNumber: step,
+    xIsNext: (step % 2) === 0,
+  });
+}
+```
+
+Notice in `jumpTo` method, we haven't updated `history` property of the state.
+That is because state updates are merged or in more simple words
+React will update only the properties mentioned in `setState` method
+leaving the remaining state as that is.
+For more info [see the documentation](https://reactjs.org/docs/state-and-lifecycle.html#state-updates-are-merged).
+
+We will now make a few chages to the Game's `handleClick` method
+which fires when you click on a square.
+
+The `stepNumber` state we've added reflects the move displayed to the user now.
+After we make a new move,
+we need to update `stepNumber` by adding `stepNumber: history.length`
+as part of the `this.setState` argument.
+This ensures we don't get stuck showing the same move
+after a new one has been made.
+
+We will also replace reading `this.state.history`
+with `this.state.history.slice(0, this.tate.stepNumber + 1)`.
+This ensures that if we "go back in time"
+and then make a new move from that point,
+we throw away all the "future" history that would now become incorrect.
+
+```js
+handleClick(i) {
+  const history = this.state.history.slice(0, this.state.stepNumber + 1);
+  const current = history[history.length - 1];
+  const squares = current.squares.slice();
+  if (calculateWinner(squares) || squares[i]) {
+    return;
+  }
+  square[i] = this.state.xIsNext ? 'X' : 'O';
+  this.setState({
+    history: history.concat([{ squares: squares }]),
+    stepNumber: history.length,
+    xIsNext: !this.state.xIsNext,
+  });
+}
+```
+
+Fianally, we will modify the Game component's `render` method
+from always rendering the last move
+to rendering the currently selected move according to `stepNumber`:
+
+```js
+render() {
+  const history = this.state.history;
+  const current = history[this.state.stepNumber];
+  const winner = calculateWinner(current.sqaures);
+
+  // ...
+}
+```
+
+If we click on any in the game's history,
+the tic-tac-toe board should immediately update to show
+what the board looked like after that step occurred.
+
+### Wrapping up
+
+Congratulations! You've created a tic-tac-toe game that:
+
+-   Lets you play tic-tac-toe,
+-   Indicates when a player has won the game,
+-   Stores a game's history as a game progresses,
+-   Allow players to review a game's history
+    and see previous versions of a game's board.
+
+Nice work!
+We hope you now feel like you have a decent grasp of how React works.
+
+Check out the final result here:
+[Final Result](https://codepen.io/gaearon/pen/gWWZgR?editors=0010)
+
+If you have extra time or want to practice your new React skills,
+here are some ideas for improvements
+that you could make to the tic-tac-toe game
+which are listed in order of increasing difficulty:
+
+1.  Display the location for each move in format (col, row)
+    in the move history list.
+2.  Bold the currently seleted item in the move list.
+3.  Rewrite Board to use two loops
+    to make the squares instead of hardcoding them.
+4.  Add a toggle button that lets you sort the moves
+    in either ascending or descending order.
+5.  When someone wins, highlight the three squares that caused the win.
+6.  When no one wins, display a message about the resulr being a draw.
+
+Throughout this tutorial,
+we touched on React concepts including elements, components, props, and state.
+For a more detailed explanation of each of these topics,
+chckout the [rest of the documentation](https://reactjs.org/docs/hello-world.html).
+To learn more about defining components,
+check out the [React.Component API reference](https://reactjs.org/docs/react-component.html).
