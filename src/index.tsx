@@ -57,6 +57,7 @@ function Game() {
   const [xIsNext, setXIsNext] = useState(true);
   const [current, setCurrent] = useState<SquareType>({ squares: [] });
   const [status, setStatus] = useState('');
+  const [moves, setMoves] = useState<JSX.Element[]>([<></>]);
 
   const handleClick = (i: number) => {
     const squares = current.squares.slice();
@@ -66,7 +67,20 @@ function Game() {
     setXIsNext(!xIsNext);
   };
 
+  const jumpTo = (move: number) => console.log(move);
+
   useEffect(() => {
+    setMoves(history.map((_step, move) => {
+      const desc = move
+        ? `Go to move #${move}`
+        : 'Go to game start';
+      return (
+        <li>
+          <button onClick={() => jumpTo(move)}>{desc}</button>
+        </li>
+      );
+    }));
+
     setCurrent(history[history.length - 1]);
     const winner = calculateWinner(current.squares);
     setStatus(winner
@@ -84,7 +98,7 @@ function Game() {
       </div>
       <div className="game-info">
         <div>{status}</div>
-        <ol>{/* TODO */}</ol>
+        <ol>{moves}</ol>
       </div>
     </div>
   );

@@ -929,3 +929,86 @@ handleClick(i) {
 At this point,
 the Board component only needs the `renderSquare` and `render` method.
 The game's state and the `handleClick` method should be in the Game component.
+
+### Showing the Past Moves
+
+Since we are recording the tic-tac-toe game's history,
+we can now display it to the player as a list of past moves.
+
+We learned earlier that React elements are first-class JavaScript objects;
+we can pass them around in our applications.
+To render multiple items in React, we can use an array of React elements.
+
+In JavaScript, arrays have a `map` method
+that is commonly used for mapping data to other data, for example:
+
+```js
+const numbers = [1, 2, 3];
+const doubled = numbers.map(x => x * 2); // [2, 4, 6]
+```
+
+Using the `map` method, we can map our history of moves
+to React elements representing buttons on the screen,
+and display a list of buttons to "jump" to past moves.
+
+Let's `map` over the `history` in the Game's `render` method:
+
+```jsx
+render() {
+  const history = this.state.history;
+  const current = history[history.length - 1];
+  const winner = calculateWinner(current.squares);
+
+  const moves = history.map((step, move) => {
+    const desc = move
+      ? 'Go to move #' + move
+      : 'Go to game start';
+    return (
+      <li>
+        <button onClick={() => this.jumpTo(move)}>{desc}</button>
+      </li>
+    );
+  });
+
+  let statusl
+  if (winner) {
+    status = 'Winner: ' + winner;
+  } else {
+    status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+  }
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board
+          squares={current.squares}
+          onClick={(i) => this.handleClick(i)}
+        />
+      </div>
+      <div className="game-info">
+        <div>{status}</div>
+        <ol>{moves}</ol>
+      </div>
+    </div>
+  );
+}
+```
+
+As we iterate through `histroy` array,
+`step` variable refers to the current `history` element index,
+and `move` refers to the current `history` element index.
+We are only intereted in `move` here,
+hence `step` is not getting assigned to anything.
+
+For each move in the tic-tac-toe game's history,
+we create a list item `<li>` which contains a button `<button>`.
+The button has a `onClick` handler which called `this.jumpTo()`.
+We haven't implemented the `jumpTo` method yet.
+For now, we should see a list of the moves that have occured in the game
+and a warning in the developer tools console that says:
+
+> **Warning:**
+> **Each child in an array or iterator should have a unique "key" prop.**
+> **Check the render method of "Game".**
+
+Let's discuss what the above warning means.
